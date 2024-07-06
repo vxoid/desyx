@@ -14,7 +14,7 @@ class Tree(MinMax):
   def get_main(self) -> str:
     return self.__name
   
-  def get_subs(self, muts: List[Mut] = [Repeat(), Prefix(), Sufix(), Digitize()]) -> List[str]:
+  def get_semis(self, muts: List[Mut] = [Repeat(), Prefix(), Sufix(), Digitize()]) -> List[str]:
     return list(set([mut_name for mut in muts for mut_name in mut.mutate(self.__name, self._min_length, self._max_length)]))
 
   def __str__(self) -> str:

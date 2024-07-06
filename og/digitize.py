@@ -26,7 +26,7 @@ class Digitize(Mut):
       if char in char_to_num:
         digitable.append(i)
 
-    if len(digitable == 0):
+    if len(digitable) == 0:
       return []
 
     result = []

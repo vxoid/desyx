@@ -13,4 +13,4 @@ try:
     proxies = [Proxy.from_dict(proxy_dict) for proxy_dict in json.load(file)]
 except Exception as e:
   print(Fore.YELLOW + f"WARNING: couldn't read proxies file `{proxies_file}` due to {e}" + Fore.RESET)
-  proxies = [None]
+  proxies = []
