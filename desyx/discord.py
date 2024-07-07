@@ -6,17 +6,18 @@ from .proxy import Proxy, NoProxy
 from .service import Service
 
 class Discord(Service):
+  HEADERS = {
+    "Content-Type": "application/json"
+  }
   def __init__(self, proxies: List[Proxy] = [], useself: bool = True):
-    super().__init__(proxies=proxies, useself=useself)
+    super().__init__(proxies=proxies, useself=useself, min_len=2, max_len=10)
 
   def get_name(self) -> str:
     return "discord"
 
   def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = "https://discord.com/api/v9/unique-username/username-attempt-unauthed"
-    headers = {
-      "Content-Type": "application/json"
-    }
+
 
     proxies = None
     if type(proxy) is not NoProxy:
@@ -29,7 +30,7 @@ class Discord(Service):
       if https is not None:
         proxies["https"] = https
     
-    response = requests.post(url, json.dumps({ "username": username }), headers=headers, proxies=proxies)
+    response = requests.post(url, json.dumps({ "username": username }), headers=Discord.HEADERS, proxies=proxies)
     response_json = response.json()
     if "taken" not in response_json:
       if "retry_after" in response_json:

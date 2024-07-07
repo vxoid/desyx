@@ -18,6 +18,15 @@ pip3 install -r requirements.txt
   }
 ]
 ```
+- Create `twitter.json` file with at least one account cookies if you consider running for Twitter
+```json
+[
+  {
+    "auth_token":"<auth token>",
+    "ct0":"<csrf token>"
+  }
+]
+```
 - Run
 ```
 python3 main.py

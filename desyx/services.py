@@ -4,7 +4,7 @@ from desyx.desyx import Desyx
 from .service import Service
 from og.og import Generator
 from typing import List
-import sys, signal
+import signal
 
 def run_bot(gen: Generator, service: Service):
   bot = Desyx(gen, service)

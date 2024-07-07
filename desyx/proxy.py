@@ -1,27 +1,15 @@
-from datetime import datetime, timedelta
+from .restrict import Restrictable
 
-
-
-class Proxy:
+class Proxy(Restrictable):
   def __init__(self, name: str, http: str | None = None, https: str | None = None):
     self.__name = name
     self.__http = http
     self.__https = https
-    self.__restricted_till = datetime.now()
+    super().__init__()
 
   @staticmethod
   def from_dict(dict) -> "Proxy":
     return Proxy(dict["name"], dict.get("http"), dict.get("https"))
-  
-  def available(self) -> bool:
-    cur_time = datetime.now()
-    return cur_time >= self.__restricted_till
-  
-  def get_restricted_till(self):
-    return self.__restricted_till
-  
-  def set_rate_limit(self, for_secs: float):
-    self.__restricted_till = datetime.now() + timedelta(seconds=for_secs)
   
   def get_name(self):
     return self.__name
@@ -33,7 +21,7 @@ class Proxy:
     return self.__https
   
   def __str__(self) -> str:
-    return f"{self.__name} x -> {self.__restricted_till.strftime('%Y-%m-%d %H:%M:%S')}"
+    return f"{self.__name} x -> {self.get_restricted_till().strftime('%Y-%m-%d %H:%M:%S')}"
   
 class NoProxy(Proxy):
   def __init__(self):
