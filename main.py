@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
   medias = [
     Discord(proxies=config.proxies, useself=useself),
-    # Instagram(proxies=config.proxies, useself=useself)
+    Instagram(proxies=config.proxies, useself=useself)
   ]
   if len(config.twitter_accounts) > 0:
     medias.append(Twitter(accounts=config.twitter_accounts, proxies=config.proxies, useself=useself))

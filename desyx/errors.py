@@ -8,6 +8,6 @@ class UnknownError(Exception):
     self.errors = errors
 
 class RateError(UnknownError):
-  def __init__(self, time: float):
+  def __init__(self, time: float = 800):
     super().__init__(f"The resource is being rate limited for {time} secs.")
     self.time = time
