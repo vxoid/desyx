@@ -2,41 +2,29 @@ import random
 import requests
 from .errors import *
 from typing import List
-from .account import Account
 from datetime import datetime
 from .proxy import Proxy, NoProxy
+from .restrict import RestrictableHolder
 from .service import Service, USER_AGENTS
+from .twitter_account import TwitterAccount
 
 class Twitter(Service):
-  def __init__(self, accounts: List[Account], proxies: List[Proxy] = [], useself: bool = True):
+  def __init__(self, accounts: List[TwitterAccount], proxies: List[Proxy] = [], useself: bool = True):
     if len(accounts) < 1:
       raise ValueError(f"Twitter bot needs at least 1 account to live")
     
-    self.accounts = accounts
+    self.accounts = RestrictableHolder(accounts)
 
     super().__init__(proxies=proxies, useself=useself, min_len=5, max_len=10)
 
   def get_name(self) -> str:
     return "twitter"
   
-  def __get_available_accounts(self) -> List[Account]:
-    return [account for account in self.accounts if account.available()]
-  
-  def __get_most_recently_unlocked_account(self) -> Account:
-    cur_time = datetime.now()
-    result = self.accounts[0]
-    
-    for account in self.accounts:
-      if account.get_restricted_till() - cur_time < result.get_restricted_till() - cur_time:
-        result = account
-
-    return result
-
   def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = f"https://x.com/i/api/i/users/username_available.json?suggest=false&username={username}"
-    accounts = self.__get_available_accounts()
+    accounts = self.accounts._get_available()
     if len(accounts) < 1:
-      account = self.__get_most_recently_unlocked_account()
+      account = self.accounts._get_most_recently_unlocked()
       raise RateError((account.get_restricted_till() - datetime.now()).total_seconds())
 
     account = random.choice(accounts)

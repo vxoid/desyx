@@ -1,7 +1,8 @@
-from .proxy import Proxy, NoProxy
+from .restrict import Restrictable, RestrictableHolder
+from .errors import RateError, UnknownError
 from abc import abstractmethod
 from datetime import datetime
-from .errors import RateError
+from .proxy import NoProxy
 from typing import List
 import random
 
@@ -17,30 +18,32 @@ USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5.1 Safari/605.1.15',
 ]
 
-class Service:
-  def __init__(self, proxies: List[Proxy] = [], useself: bool = True, min_len: int = 2, max_len: int = 10):
+UNEXPECTED_ERROR_WAIT = RateError().time
+
+class Service(RestrictableHolder):
+  def __init__(self, proxies: List[Restrictable] = [], useself: bool = True, min_len: int = 2, max_len: int = 10):
     if not useself and len(proxies) < 1:
       raise ValueError(f"no proxies provided while useself is False.")
     
-    self.proxies = proxies
-    if useself:
-      self.proxies.append(NoProxy())
     self.useself = useself
     self.min_len = min_len
     self.max_len = max_len
-
+    super().__init__(proxies)
+    if useself:
+      self.restrictables.append(NoProxy())
+    
   @abstractmethod
   def get_name(self) -> str:
     raise NotImplementedError()
   
   @abstractmethod
-  def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
+  def _unchecked_username_valid(self, username: str, proxy: Restrictable) -> bool:
     raise NotImplementedError()
     
   def check_username_valid(self, username: str) -> bool:
-    available = self.__get_available_proxies()
+    available = self._get_available()
     if len(available) < 1:
-      proxy = self.__get_most_recently_unlocked_proxy()
+      proxy = self._get_most_recently_unlocked()
       raise RateError((proxy.get_restricted_till() - datetime.now()).total_seconds())
     
     proxy = random.choice(available)
@@ -49,19 +52,8 @@ class Service:
     except RateError as re:
       proxy.set_rate_limit(re.time)
       return self.check_username_valid(username)
-    except Exception as e:
+    except UnknownError as e:
       raise e
-
-  def __get_most_recently_unlocked_proxy(self) -> Proxy:
-    cur_time = datetime.now()
-    result = self.proxies[0]
-    
-    for proxy in self.proxies:
-      if proxy.get_restricted_till() - cur_time < result.get_restricted_till() - cur_time:
-        result = proxy
-
-    return result
-
-  def __get_available_proxies(self) -> List[Proxy]:
-    return [proxy for proxy in self.proxies if proxy.available()]
-      
+    except Exception as e:
+      proxy.set_rate_limit(UNEXPECTED_ERROR_WAIT)
+      raise e

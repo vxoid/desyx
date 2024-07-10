@@ -1,6 +1,6 @@
 from .restrict import Restrictable
 
-class Account(Restrictable):
+class TwitterAccount(Restrictable):
   def __init__(self, cookies: dict):
     self.__cookies = cookies
     super().__init__()
@@ -9,5 +9,5 @@ class Account(Restrictable):
     return self.__cookies
 
   @staticmethod
-  def from_dict(dict) -> "Account":
-    return Account(dict)
+  def from_dict(dict) -> "TwitterAccount":
+    return TwitterAccount(dict)

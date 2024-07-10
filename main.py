@@ -2,9 +2,9 @@ from desyx.instagram import Instagram
 from desyx.twitter import Twitter
 from desyx.services import Services
 from desyx.discord import Discord
-import config
 
 if __name__ == '__main__':
+  import config
   useself = len(config.proxies) < 1
 
   medias = [

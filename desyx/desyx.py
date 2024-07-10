@@ -7,7 +7,6 @@ from og.sufix import Sufix
 from .service import Service
 from og.og import Generator
 from colorama import Fore
-from .proxy import Proxy
 
 class Desyx:
   def __init__(self, generator: Generator, service: Service):
