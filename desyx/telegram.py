@@ -1,4 +1,3 @@
-import time
 from .errors import *
 from typing import List
 from .proxy import Proxy
@@ -25,14 +24,12 @@ class Telegram(Service):
     proxies = proxy.get_pyrogram_proxy()
 
     client = Client(account.name, account.api_id, account.api_hash, workdir=self.session_dir, proxy=proxies)
-
     try:
       with client:
-        print("within")
         try:
           client.resolve_peer(username)
           return False
         except UsernameNotOccupied:
           return True
-    except ConnectionError as e:
-      raise e
+    except ConnectionError as err:
+      raise err

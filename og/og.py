@@ -4,7 +4,7 @@ from typing import List
 
 class Generator:
   def __init__(self, words_dict_file: str = "words.txt"):
-    print("> this Generator piece of code was made by [VXIIIEATH], if you're redistributing this project you MUST either credit me as @VXIIIEATH or leave link on my social media like GITHUB.")
+    print("> All develepment was done by [VXOID](https://www.instagram.com/vxoid.lostmyself/), if you're redistributing this project you MUST either credit me as @VXOID or leave link on my social media like [IG](https://www.instagram.com/vxoid.lostmyself/).")
 
     with open(words_dict_file, 'r') as file:
       self.words = [word.lower() for word in file.read().split()]
