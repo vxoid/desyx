@@ -3,7 +3,7 @@ import random
 import requests
 from .errors import *
 from typing import List
-from .proxy import Proxy, NoProxy
+from .proxy import Proxy
 from .service import Service, USER_AGENTS
 
 def get_ig_app_id():
@@ -29,16 +29,8 @@ class Instagram(Service):
       'user-agent': random.choice(USER_AGENTS),
       'X-Ig-App-Id': self.ig_app_id
     }
-    proxies = None
-    if type(proxy) is not NoProxy:
-      proxies = {}
-      http = proxy.get_http()
-      if http is not None:
-        proxies["http"] = http
 
-      https = proxy.get_https()
-      if https is not None:
-        proxies["https"] = https
+    proxies = proxy.get_requests_proxy()
 
     response = requests.get(url, headers=heeaders, proxies=proxies)
     if response.status_code == 404:

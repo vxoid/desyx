@@ -22,12 +22,8 @@ class Twitter(Service):
   
   def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = f"https://x.com/i/api/i/users/username_available.json?suggest=false&username={username}"
-    accounts = self.accounts._get_available()
-    if len(accounts) < 1:
-      account = self.accounts._get_most_recently_unlocked()
-      raise RateError((account.get_restricted_till() - datetime.now()).total_seconds())
-
-    account = random.choice(accounts)
+    
+    account = self.accounts._get_random()
     cookies = account.get_cookies()
     headers = {
       'authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs=1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
@@ -41,16 +37,7 @@ class Twitter(Service):
       'x-twitter-client-language': 'en'
     }
 
-    proxies = None
-    if type(proxy) is not NoProxy:
-      proxies = {}
-      http = proxy.get_http()
-      if http is not None:
-        proxies["http"] = http
-
-      https = proxy.get_https()
-      if https is not None:
-        proxies["https"] = https
+    proxies = proxy.get_requests_proxy()
 
     response = requests.get(url, headers=headers, proxies=proxies)
     try: 

@@ -2,7 +2,7 @@ import json
 import requests
 from .errors import *
 from typing import List
-from .proxy import Proxy, NoProxy
+from .proxy import Proxy
 from .service import Service
 
 class Discord(Service):
@@ -18,17 +18,7 @@ class Discord(Service):
   def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = "https://discord.com/api/v9/unique-username/username-attempt-unauthed"
 
-
-    proxies = None
-    if type(proxy) is not NoProxy:
-      proxies = {}
-      http = proxy.get_http()
-      if http is not None:
-        proxies["http"] = http
-
-      https = proxy.get_https()
-      if https is not None:
-        proxies["https"] = https
+    proxies = proxy.get_requests_proxy()
     
     response = requests.post(url, json.dumps({ "username": username }), headers=Discord.HEADERS, proxies=proxies)
     response_json = response.json()

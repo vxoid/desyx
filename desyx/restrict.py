@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List
+from .errors import *
+import random
 
 class Restrictable:
   def __init__(self):
@@ -31,3 +33,11 @@ class RestrictableHolder:
 
   def _get_available(self) -> List[Restrictable]:
     return [restrictable for restrictable in self.restrictables if restrictable.available()]
+  
+  def _get_random(self) -> Restrictable:
+    restrictables = self._get_available()
+    if len(restrictables) < 1:
+      restrictable = self._get_most_recently_unlocked()
+      raise RateError((restrictable.get_restricted_till() - datetime.now()).total_seconds())
+
+    return random.choice(restrictables)

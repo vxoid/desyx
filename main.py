@@ -1,6 +1,7 @@
 from desyx.instagram import Instagram
-from desyx.twitter import Twitter
+from desyx.telegram import Telegram
 from desyx.services import Services
+from desyx.twitter import Twitter
 from desyx.discord import Discord
 
 if __name__ == '__main__':
@@ -9,7 +10,8 @@ if __name__ == '__main__':
 
   medias = [
     Discord(proxies=config.proxies, useself=useself),
-    Instagram(proxies=config.proxies, useself=useself)
+    Instagram(proxies=config.proxies, useself=useself),
+    Telegram(accounts=config.telegram_accounts, proxies=config.proxies, useself=useself, session_dir=config.telegram_session_dir)
   ]
   if len(config.twitter_accounts) > 0:
     medias.append(Twitter(accounts=config.twitter_accounts, proxies=config.proxies, useself=useself))

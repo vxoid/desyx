@@ -11,6 +11,7 @@ load_dotenv()
 proxies_file = os.getenv("PROXIES_FILE") or "proxies.json"
 twitter_accounts_file = os.getenv("TWITTER_ACCOUNTS") or "twitter_accounts.json"
 telegram_accounts_file = os.getenv("TELEGRAM_ACCOUNTS") or "telegram_accounts.json"
+telegram_session_dir = os.getenv("TELEGRAM_SESSION_DIR")
 
 try:
   with open(proxies_file, 'r') as file:

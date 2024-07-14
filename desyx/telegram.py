@@ -1,30 +1,38 @@
-import json
-import requests
+import time
 from .errors import *
 from typing import List
-from .proxy import Proxy, NoProxy
-from .service import Service
+from .proxy import Proxy
 from pyrogram import Client
-Client()
-
+from .restrict import RestrictableHolder
+from .telegram_account import TelegramAccount
+from pyrogram.errors import UsernameNotOccupied
+from .service import Service, UNEXPECTED_ERROR_WAIT
 
 class Telegram(Service):
-  def __init__(self, proxies: List[Proxy] = [], useself: bool = True):
-    super().__init__(proxies=proxies, useself=useself, min_len=2, max_len=10)
+  def __init__(self, accounts: List[TelegramAccount], proxies: List[Proxy] = [], useself: bool = True, session_dir: str = "sessions"):
+    if len(accounts) < 1:
+      raise ValueError(f"Telegram bot needs at least 1 account to live")
+    
+    self.session_dir = session_dir
+    self.accounts = RestrictableHolder(accounts)
+    super().__init__(proxies=proxies, useself=useself, min_len=5, max_len=10)
 
   def get_name(self) -> str:
     return "telegram"
 
   def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
-    url = ""
+    account = self.accounts._get_random()
+    proxies = proxy.get_pyrogram_proxy()
 
-    proxies = None
-    if type(proxy) is not NoProxy:
-      proxies = {}
-      http = proxy.get_http()
-      if http is not None:
-        proxies["http"] = http
+    client = Client(account.name, account.api_id, account.api_hash, workdir=self.session_dir, proxy=proxies)
 
-      https = proxy.get_https()
-      if https is not None:
-        proxies["https"] = https
+    try:
+      with client:
+        print("within")
+        try:
+          client.resolve_peer(username)
+          return False
+        except UsernameNotOccupied:
+          return True
+    except ConnectionError as e:
+      raise e
