@@ -10,7 +10,7 @@ class Discord(Service):
     "Content-Type": "application/json"
   }
   def __init__(self, proxies: List[Proxy] = [], useself: bool = True):
-    super().__init__(proxies=proxies, useself=useself, min_len=2, max_len=10)
+    super().__init__(proxies=proxies, useself=useself, min_len=2, max_len=10, trusted_only=False, secure_only=True)
 
   def get_name(self) -> str:
     return "discord"

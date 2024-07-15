@@ -12,18 +12,34 @@ pip3 install -r requirements.txt
 ```json
 [
   {
-    "name": "noname",
-    "http": "<addr>",
-    "https": "<addr>"
+    "name": "idk, a name",
+    "scheme": "socks5 | socks4 | http",
+    "hostname": "<hostname>",
+    "port": 80,
+    "username": "",
+    "password": "",
+    "trusted": true
   }
 ]
 ```
-- Create `twitter.json` file with at least one account cookies if you consider running for Twitter
+- Create `twitter_accounts.json` file with at least one account cookies if you consider running for Twitter
 ```json
 [
   {
     "auth_token":"<auth token>",
     "ct0":"<csrf token>"
+  }
+]
+```
+- Create `telegram_accounts.json` file with at least one account credentials or folder `./sessions` with active session if you consider running for Telegram
+```json
+[
+  {
+    "session_name": "name",
+    "api_id": "<apiid>",
+    "api_hash": "<apihash>",
+    "phone_number": "<phonenum>",
+    "2fa_pass": "123456"
   }
 ]
 ```

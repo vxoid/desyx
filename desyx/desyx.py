@@ -35,12 +35,12 @@ class Desyx:
       time.sleep(err.time + 1)
       return self.__handle_username(name, is_semi)
     except Exception as err:
-      self.__handle_error(err)
+      self.__handle_error(name, err)
       return False  
 
-  def __handle_error(self, err):
+  def __handle_error(self, name: str, err):
     prefix = self.__print_prefix()
-    print(Fore.RED + f"{prefix}> {err}" + Fore.RESET)
+    print(Fore.RED + f"{prefix}> could not check name '{name}' -> {err}" + Fore.RESET)
 
   def __handle_rate_limit(self, err):
     prefix = self.__print_prefix()
@@ -49,7 +49,7 @@ class Desyx:
   def run(self):
     muts = [Repeat(), Prefix(amount=3), Sufix(), Digitize(amount=1)]
     while True:
-      for name in self.generator.generate(min_length=2, max_length=10):
+      for name in self.generator.generate(min_length=self.service.min_len, max_length=self.service.max_len):
         if self.__handle_username(name.get_main()):
           continue
 

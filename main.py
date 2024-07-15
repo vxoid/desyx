@@ -8,13 +8,25 @@ if __name__ == '__main__':
   import config
   useself = len(config.proxies) < 1
 
-  medias = [
-    Discord(proxies=config.proxies, useself=useself),
-    Instagram(proxies=config.proxies, useself=useself),
-    Telegram(accounts=config.telegram_accounts, proxies=config.proxies, useself=useself, session_dir=config.telegram_session_dir)
-  ]
+  medias = []
+  try:
+    medias.append(Discord(proxies=config.proxies, useself=useself))
+  except:
+    pass
+  try:
+    medias.append(Instagram(proxies=config.proxies, useself=useself))
+  except:
+    pass
+  try:
+    medias.append(Telegram(accounts=config.telegram_accounts, proxies=config.proxies, useself=useself, session_dir=config.telegram_session_dir))
+  except:
+    pass
+
   if len(config.twitter_accounts) > 0:
-    medias.append(Twitter(accounts=config.twitter_accounts, proxies=config.proxies, useself=useself))
+    try:
+      medias.append(Twitter(accounts=config.twitter_accounts, proxies=config.proxies, useself=useself))
+    except:
+      pass
 
   services = Services(medias)
   

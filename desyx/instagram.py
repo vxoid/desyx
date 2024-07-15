@@ -17,22 +17,24 @@ class Instagram(Service):
       raise ValueError("could not fetch ig app id, this version needs an update")
     
     self.ig_app_id = x_ig_app_id
-    super().__init__(proxies=proxies, useself=useself, min_len=1, max_len=10)
+    super().__init__(proxies=proxies, useself=useself, min_len=1, max_len=10, trusted_only=False, secure_only=False)
 
   def get_name(self) -> str:
     return "instagram"
 
   def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
-    url = f"https://www.instagram.com/api/v1/users/web_profile_info/?username={username}"
+    url = f"http://www.instagram.com/api/v1/users/web_profile_info/?username={username}"
 
-    heeaders = {
+    headers = {
       'user-agent': random.choice(USER_AGENTS),
       'X-Ig-App-Id': self.ig_app_id
     }
 
     proxies = proxy.get_requests_proxy()
+    if proxies is None or "https" in proxies:
+      url = f"https://www.instagram.com/api/v1/users/web_profile_info/?username={username}"
 
-    response = requests.get(url, headers=heeaders, proxies=proxies)
+    response = requests.get(url, headers=headers, proxies=proxies)
     if response.status_code == 404:
       return True
     elif response.status_code == 200:

@@ -2,8 +2,7 @@ import random
 import requests
 from .errors import *
 from typing import List
-from datetime import datetime
-from .proxy import Proxy, NoProxy
+from .proxy import Proxy
 from .restrict import RestrictableHolder
 from .service import Service, USER_AGENTS
 from .twitter_account import TwitterAccount
@@ -15,7 +14,7 @@ class Twitter(Service):
     
     self.accounts = RestrictableHolder(accounts)
 
-    super().__init__(proxies=proxies, useself=useself, min_len=5, max_len=10)
+    super().__init__(proxies=proxies, useself=useself, min_len=5, max_len=10, trusted_only=True, secure_only=True)
 
   def get_name(self) -> str:
     return "twitter"
@@ -40,6 +39,9 @@ class Twitter(Service):
     proxies = proxy.get_requests_proxy()
 
     response = requests.get(url, headers=headers, proxies=proxies)
+    if response.text == "":
+      raise ValueError(f"response is empty")
+
     try: 
       response_json = response.json()
       if "valid" not in response_json:      

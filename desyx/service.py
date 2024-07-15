@@ -21,9 +21,15 @@ USER_AGENTS = [
 UNEXPECTED_ERROR_WAIT = RateError().time
 
 class Service(RestrictableHolder):
-  def __init__(self, proxies: List[Restrictable] = [], useself: bool = True, min_len: int = 2, max_len: int = 10):
+  def __init__(self, proxies: List[Restrictable] = [], useself: bool = True, min_len: int = 2, max_len: int = 10, trusted_only: bool = True, secure_only: bool = True):
+    if trusted_only:
+      proxies = [proxy for proxy in proxies if proxy.is_trusted()]
+
+    if secure_only:
+      proxies = [proxy for proxy in proxies if proxy.is_secure()]
+
     if not useself and len(proxies) < 1:
-      raise ValueError(f"no proxies provided while useself is False.")
+      raise ValueError(f"no valid proxies provided for {self.get_name()}, while useself is False.")
     
     self.useself = useself
     self.min_len = min_len
@@ -41,12 +47,8 @@ class Service(RestrictableHolder):
     raise NotImplementedError()
     
   def check_username_valid(self, username: str) -> bool:
-    available = self._get_available()
-    if len(available) < 1:
-      proxy = self._get_most_recently_unlocked()
-      raise RateError((proxy.get_restricted_till() - datetime.now()).total_seconds())
+    proxy = self._get_random()
     
-    proxy = random.choice(available)
     try:
       return self._unchecked_username_valid(username, proxy)
     except RateError as re:

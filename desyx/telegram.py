@@ -2,10 +2,10 @@ from .errors import *
 from typing import List
 from .proxy import Proxy
 from pyrogram import Client
+from .service import Service
 from .restrict import RestrictableHolder
 from .telegram_account import TelegramAccount
-from pyrogram.errors import UsernameNotOccupied
-from .service import Service, UNEXPECTED_ERROR_WAIT
+from pyrogram.errors import UsernameNotOccupied, UsernameInvalid
 
 class Telegram(Service):
   def __init__(self, accounts: List[TelegramAccount], proxies: List[Proxy] = [], useself: bool = True, session_dir: str = "sessions"):
@@ -14,7 +14,7 @@ class Telegram(Service):
     
     self.session_dir = session_dir
     self.accounts = RestrictableHolder(accounts)
-    super().__init__(proxies=proxies, useself=useself, min_len=5, max_len=10)
+    super().__init__(proxies=proxies, useself=useself, min_len=5, max_len=10, trusted_only=True, secure_only=True)
 
   def get_name(self) -> str:
     return "telegram"
@@ -31,5 +31,7 @@ class Telegram(Service):
           return False
         except UsernameNotOccupied:
           return True
+        except UsernameInvalid:
+          return False
     except ConnectionError as err:
       raise err

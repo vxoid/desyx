@@ -4,8 +4,10 @@ from .errors import *
 import random
 
 class Restrictable:
-  def __init__(self):
+  def __init__(self, trusted: bool = False, secure: bool = False):
     self.__restricted_till = datetime.now()
+    self.__secure = secure
+    self.__trusted = trusted
   
   def available(self) -> bool:
     cur_time = datetime.now()
@@ -16,6 +18,12 @@ class Restrictable:
 
   def set_rate_limit(self, for_secs: float):
     self.__restricted_till = datetime.now() + timedelta(seconds=for_secs)
+
+  def is_secure(self) -> bool:
+    return self.__secure
+  
+  def is_trusted(self) -> bool:
+    return self.__trusted
 
 class RestrictableHolder:
   def __init__(self, restrictables: List[Restrictable]) -> None:
