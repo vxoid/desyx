@@ -33,5 +33,7 @@ class Telegram(Service):
           return True
         except UsernameInvalid:
           return False
+        except KeyError:
+          return False
     except ConnectionError as err:
       raise err

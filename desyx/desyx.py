@@ -1,18 +1,15 @@
 import time
-from og.digitize import Digitize
 from .errors import RateError
-from og.repeat import Repeat
-from og.prefix import Prefix
-from og.sufix import Sufix
 from .service import Service
 from og.og import Generator
 from colorama import Fore
 
 class Desyx:
-  def __init__(self, generator: Generator, service: Service):
+  def __init__(self, generator: Generator, service: Service, semi_muts = []):
     self.service = service
     self.service_name = service.get_name()
     self.generator = generator
+    self.semi_muts = semi_muts
   
   def __print_prefix(self) -> str:
     return f"[{self.service_name}]: "
@@ -47,11 +44,10 @@ class Desyx:
     print(Fore.RED + f"{prefix}> The closest proxy rate limited for {err.time} secs, waiting" + Fore.RESET)
 
   def run(self):
-    muts = [Repeat(), Prefix(amount=3), Sufix(), Digitize(amount=1)]
     while True:
       for name in self.generator.generate(min_length=self.service.min_len, max_length=self.service.max_len):
         if self.__handle_username(name.get_main()):
           continue
 
-        for sub in name.get_semis(muts=muts):
-          self.__handle_username(sub, is_semi=True)
+        for semi in name.get_semis(muts=self.semi_muts):
+          self.__handle_username(semi, is_semi=True)
