@@ -1,4 +1,4 @@
-from .restrict import Restrictable
+from restrict.restrict import Restrictable
 
 class TwitterAccount(Restrictable):
   def __init__(self, cookies: dict):

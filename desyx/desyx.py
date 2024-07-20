@@ -1,53 +1,56 @@
-import time
-from .errors import RateError
-from .service import Service
+from errors.errors import RateError
+from logger.logger import Logger
+from logger.cli import CliLogger
+from service.service import Service
 from og.og import Generator
-from colorama import Fore
+from typing import List
+from og.mut import Mut
+import asyncio
+import time
 
 class Desyx:
-  def __init__(self, generator: Generator, service: Service, semi_muts = []):
+  def __init__(self, generator: Generator, service: Service, loggers: List[Logger] = [CliLogger()], semi_muts: List[Mut] = []):
     self.service = service
-    self.service_name = service.get_name()
+    self.service_id = service.get_id()
     self.generator = generator
+    self.loggers = loggers
     self.semi_muts = semi_muts
-  
-  def __print_prefix(self) -> str:
-    return f"[{self.service_name}]: "
 
-  def __handle_username(self, name: str, is_semi: bool = False) -> bool:
-    prefix = self.__print_prefix()
+  async def __handle_username(self, name: str, is_semi: bool = False) -> bool:
+    async with asyncio.TaskGroup() as tg:
+      try:
+        valid = await self.service.check_username_valid(name)
 
-    try:
-      valid = self.service.check_username_valid(name)
+        if valid:
+          if is_semi:
+            for logger in self.loggers:
+              tg.create_task(logger.log_semi_og(name, self.service_id))
+          else:
+            for logger in self.loggers:
+              tg.create_task(logger.log_og(name, self.service_id))
 
-      if valid:
-        if is_semi:
-          print(Fore.YELLOW + f"{prefix}'{name}' is valid semi OG" + Fore.RESET)
-        else:
-          print(Fore.GREEN + f"{prefix}'{name}' is valid OG" + Fore.RESET)
+        return valid
+      except RateError as err:
+        tg.create_task(self.__handle_rate_limit(name, err))
+        await asyncio.sleep(err.time + 1)
+        return await self.__handle_username(name, is_semi)
+      except Exception as err:
+        tg.create_task(self.__handle_error(name, err))
+        return False  
 
-      return valid
-    except RateError as err:
-      self.__handle_rate_limit(err)
-      time.sleep(err.time + 1)
-      return self.__handle_username(name, is_semi)
-    except Exception as err:
-      self.__handle_error(name, err)
-      return False  
+  async def __handle_error(self, name: str, err):
+    for logger in self.loggers:
+      await logger.log_error(name, err, self.service_id)
 
-  def __handle_error(self, name: str, err):
-    prefix = self.__print_prefix()
-    print(Fore.RED + f"{prefix}> could not check name '{name}' -> {err}" + Fore.RESET)
+  async def __handle_rate_limit(self, name: str, err):
+    for logger in self.loggers:
+      await logger.log_rate_limit(name, err, self.service_id)
 
-  def __handle_rate_limit(self, err):
-    prefix = self.__print_prefix()
-    print(Fore.RED + f"{prefix}> The closest proxy rate limited for {err.time} secs, waiting" + Fore.RESET)
-
-  def run(self):
+  async def run(self):
     while True:
       for name in self.generator.generate(min_length=self.service.min_len, max_length=self.service.max_len):
-        if self.__handle_username(name.get_main()):
+        if await self.__handle_username(name.get_main()):
           continue
-
+        
         for semi in name.get_semis(muts=self.semi_muts):
-          self.__handle_username(semi, is_semi=True)
+          await self.__handle_username(semi, is_semi=True)

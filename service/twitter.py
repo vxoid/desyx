@@ -1,25 +1,27 @@
 import random
-import requests
-from .errors import *
+import aiohttp
 from typing import List
-from .proxy import Proxy
-from .restrict import RestrictableHolder
+from proxy.proxy import Proxy
+from proxy.proxies import Proxies
+from errors.errors import *
+from restrict.restrict import RestrictableHolder
 from .service import Service, USER_AGENTS
 from .twitter_account import TwitterAccount
 
 class Twitter(Service):
-  def __init__(self, accounts: List[TwitterAccount], proxies: List[Proxy] = [], useself: bool = True):
+  def __init__(self, accounts: List[TwitterAccount], proxies: Proxies):
     if len(accounts) < 1:
       raise ValueError(f"Twitter bot needs at least 1 account to live")
     
+    self.session = aiohttp.ClientSession()
     self.accounts = RestrictableHolder(accounts)
 
-    super().__init__(proxies=proxies, useself=useself, min_len=5, max_len=10, trusted_only=True, secure_only=True)
+    super().__init__(proxies=proxies, min_len=5, max_len=10, trusted_only=True, secure_only=True)
 
-  def get_name(self) -> str:
+  def get_id(self) -> str:
     return "twitter"
   
-  def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
+  async def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = f"https://x.com/i/api/i/users/username_available.json?suggest=false&username={username}"
     
     account = self.accounts._get_random()
@@ -36,17 +38,21 @@ class Twitter(Service):
       'x-twitter-client-language': 'en'
     }
 
-    proxies = proxy.get_requests_proxy()
+    proxydict = proxy.get_http_client_proxy()
 
-    response = requests.get(url, headers=headers, proxies=proxies)
-    if response.text == "":
-      raise ValueError(f"response is empty")
+    async with self.session.get(url, headers=headers, proxy=proxydict) as response:
+      response_text = await response.text()
+      if response_text == "":
+        raise ValueError(f"response is empty")
 
-    try: 
-      response_json = response.json()
-      if "valid" not in response_json:      
-        raise UnknownError(response.text, response_json.get("errors"))
-    except Exception as e:
-      raise UnknownError(response.text, [e])
+      try: 
+        response_json = await response.json()
+        if "valid" not in response_json:      
+          raise UnknownError(response_text, response_json.get("errors"))
+      except Exception as e:
+        raise UnknownError(response_text, [e])
 
-    return response_json["valid"]
+      return response_json["valid"]
+  
+  async def close(self):
+    await self.session.close()

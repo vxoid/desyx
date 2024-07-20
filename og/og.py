@@ -1,6 +1,6 @@
 import nltk
 import random
-from .tree import Tree
+from .tree import Tree, DisabledTree
 from typing import List
 from .mut import DeattachedMut
 from .mut import DeattachedMut
@@ -24,6 +24,7 @@ class Generator:
   def generate(self, min_length: int = 5, max_length: int = 15, amount: int = 30) -> List[Tree]:
     trees = [Tree(self.lemmatizer.lemmatize(word), min_length, max_length) for word in random.choices([word for word in self.words if max_length > len(word) >= min_length], k=amount)]
     for mut in self.muts:
-      trees.insert(random.randrange(len(trees) + 1), mut.mutate(None, min_length, max_length))
+      for name in mut.mutate(None, min_length, max_length):
+        trees.insert(random.randrange(len(trees) + 1), DisabledTree(name, min_length, max_length))
 
     return trees

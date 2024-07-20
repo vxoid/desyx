@@ -1,10 +1,9 @@
-from .restrict import Restrictable, RestrictableHolder
-from .errors import RateError, UnknownError
+from restrict.restrict import Restrictable, RestrictableHolder
+from errors.errors import RateError, UnknownError
+from proxy.proxies import Proxies
+from proxy.proxy import NoProxy
 from abc import abstractmethod
-from datetime import datetime
-from .proxy import NoProxy
 from typing import List
-import random
 
 USER_AGENTS = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
@@ -20,42 +19,42 @@ USER_AGENTS = [
 
 UNEXPECTED_ERROR_WAIT = RateError().time
 
-class Service(RestrictableHolder):
-  def __init__(self, proxies: List[Restrictable] = [], useself: bool = True, min_len: int = 2, max_len: int = 10, trusted_only: bool = True, secure_only: bool = True):
-    if trusted_only:
-      proxies = [proxy for proxy in proxies if proxy.is_trusted()]
+class Service():
+  def __init__(self, proxies: Proxies, min_len: int = 2, max_len: int = 10, trusted_only: bool = True, secure_only: bool = True):
+    try:
+      if trusted_only:
+        proxies = proxies.filter_trusted()
 
-    if secure_only:
-      proxies = [proxy for proxy in proxies if proxy.is_secure()]
-
-    if not useself and len(proxies) < 1:
-      raise ValueError(f"no valid proxies provided for {self.get_name()}, while useself is False.")
+      if secure_only:
+        proxies = proxies.filter_secure()
+    except ValueError as e:
+      raise ValueError(f"[{self.get_id()}]: {e}")
     
-    self.useself = useself
     self.min_len = min_len
     self.max_len = max_len
-    super().__init__(proxies)
-    if useself:
-      self.restrictables.append(NoProxy())
-    
+    self.proxies = proxies
+  
   @abstractmethod
-  def get_name(self) -> str:
+  def get_id(self) -> str:
     raise NotImplementedError()
   
   @abstractmethod
-  def _unchecked_username_valid(self, username: str, proxy: Restrictable) -> bool:
+  async def _unchecked_username_valid(self, username: str, proxy: Restrictable) -> bool:
     raise NotImplementedError()
     
-  def check_username_valid(self, username: str) -> bool:
-    proxy = self._get_random()
+  async def check_username_valid(self, username: str) -> bool:
+    proxy = self.proxies._get_random()
     
     try:
-      return self._unchecked_username_valid(username, proxy)
+      return await self._unchecked_username_valid(username, proxy)
     except RateError as re:
       proxy.set_rate_limit(re.time)
-      return self.check_username_valid(username)
+      return await self.check_username_valid(username)
     except UnknownError as e:
       raise e
     except Exception as e:
       proxy.set_rate_limit(UNEXPECTED_ERROR_WAIT)
       raise e
+    
+  async def close(self):
+    pass

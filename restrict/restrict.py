@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
+from errors.errors import *
 from typing import List
-from .errors import *
 import random
 
 class Restrictable:

@@ -43,6 +43,13 @@ pip3 install -r requirements.txt
   }
 ]
 ```
+- Setup `telegram_logger.json` if needed
+```json
+{
+  "token": "<your telegram bot token>",
+  "chat_id": "<chat id>"
+}
+```
 - Run
 ```
 python3 main.py

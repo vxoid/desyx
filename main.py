@@ -1,33 +1,58 @@
-from desyx.instagram import Instagram
-from desyx.telegram import Telegram
-from desyx.services import Services
-from desyx.twitter import Twitter
-from desyx.discord import Discord
+from logger.telegram import TelegramLogger
+from service.instagram import Instagram
+from proxy.proxy import Proxy, NoProxy
+from service.telegram import Telegram
+from service.services import Services
+from service.service import Service
+from service.twitter import Twitter
+from service.discord import Discord
+from proxy.proxies import Proxies
+from logger.cli import CliLogger
+from colorama import Fore
+import asyncio
+import config
+import copy
 
-if __name__ == '__main__':
-  import config
-  useself = len(config.proxies) < 1
+async def get_media():
+  if len(config.proxies) < 1:
+    config.proxies.append(NoProxy())
 
-  medias = []
   try:
-    medias.append(Discord(proxies=config.proxies, useself=useself))
-  except:
-    pass
+    yield Discord(Proxies(copy.deepcopy(config.proxies)))
+  except Exception as e:
+    print(Fore.YELLOW + e + Fore.RESET)
   try:
-    medias.append(Instagram(proxies=config.proxies, useself=useself))
-  except:
-    pass
+    yield await (Instagram.setup(Proxies(copy.deepcopy(config.proxies))))
+  except Exception as e:
+    print(Fore.YELLOW + e + Fore.RESET)
   try:
-    medias.append(Telegram(accounts=config.telegram_accounts, proxies=config.proxies, useself=useself, session_dir=config.telegram_session_dir))
-  except:
-    pass
+    yield Telegram(accounts=config.telegram_accounts, proxies=Proxies(copy.deepcopy(config.proxies)), session_dir=config.telegram_session_dir)
+  except Exception as e:
+    print(Fore.YELLOW + e + Fore.RESET)
 
   if len(config.twitter_accounts) > 0:
     try:
-      medias.append(Twitter(accounts=config.twitter_accounts, proxies=config.proxies, useself=useself))
-    except:
-      pass
+      yield Twitter(accounts=config.twitter_accounts, proxies=Proxies(copy.deepcopy(config.proxies)))
+    except Exception as e:
+      print(Fore.YELLOW + e + Fore.RESET)
 
-  services = Services(medias)
-  
-  services.run_desyx_processes()
+async def main():
+  medias = []
+  try:
+    async for media in get_media():
+      medias.append(media)
+
+    loggers = [CliLogger()]
+    if len(config.telegram_loggers_file) > 0:
+      loggers.append(TelegramLogger(config.telegram_loggers))
+
+    services = Services(medias, loggers)
+    
+    await services.run_desyx_processes()
+  finally:
+    async with asyncio.TaskGroup() as tg:
+      for media in medias:
+        tg.create_task(media.close())
+
+if __name__ == '__main__':
+  asyncio.run(main())

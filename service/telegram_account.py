@@ -1,4 +1,4 @@
-from .restrict import Restrictable
+from restrict.restrict import Restrictable
 
 class TelegramAccount(Restrictable):
   def __init__(self, name: str, api_id: str, api_hash: str, phone_number: str, password: str):
