@@ -1,11 +1,12 @@
 from typing import List
-from proxy.proxy import Proxy
 from errors.errors import *
 from pyrogram import Client
-from proxy.proxies import Proxies
 from .service import Service
-from restrict.restrict import RestrictableHolder
+from proxy.proxy import Proxy
+from proxy.proxies import Proxies
+from pyrogram.errors import FloodWait
 from .telegram_account import TelegramAccount
+from restrict.restrict import RestrictableHolder
 from pyrogram.errors import UsernameNotOccupied, UsernameInvalid
 
 class Telegram(Service):
@@ -19,6 +20,9 @@ class Telegram(Service):
 
   def get_id(self) -> str:
     return "telegram"
+
+  def get_link(self, username: str) -> str | None:
+    return f"https://t.me/{username}"
 
   async def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     account = self.accounts._get_random()
@@ -36,5 +40,8 @@ class Telegram(Service):
           return False
         except KeyError:
           return False
+        except FloodWait as e:
+          account.set_rate_limit(int(e.value))
+          return await self._unchecked_username_valid(username, proxy)
     except ConnectionError as err:
       raise err

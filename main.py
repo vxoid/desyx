@@ -41,7 +41,7 @@ async def main():
   try:
     async for media in get_media():
       medias.append(media)
-
+    
     loggers = [CliLogger()]
     if len(config.telegram_loggers_file) > 0:
       loggers.append(TelegramLogger(config.telegram_loggers))

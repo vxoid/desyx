@@ -11,7 +11,8 @@ from typing import List
 import asyncio
 
 OG_MUTS = [Repeat(amount=5), Random(amount=10)]
-SEMI_MUTS = [Prefix(amount=3), Sufix(), Digitize(amount=1)]
+SEMI_MUTS = []
+SEMI_MUTS = [Prefix(amount=2), Sufix(), Digitize(amount=1)]
 
 class Services:
   def __init__(self, services: List[Service], loggers: List[Logger]):
@@ -28,5 +29,5 @@ class Services:
       for service in self.services:
         bot = Desyx(generator, service, self.loggers, SEMI_MUTS)
 
-        print(f"✅ {bot.service_id}")
+        print(f"✅ {bot.service.get_id()}")
         tg.create_task(bot.run())

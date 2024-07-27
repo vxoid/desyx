@@ -21,6 +21,9 @@ class Twitter(Service):
   def get_id(self) -> str:
     return "twitter"
   
+  def get_link(self, username: str) -> str | None:
+    return f"https://x.com/{username}"
+  
   async def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = f"https://x.com/i/api/i/users/username_available.json?suggest=false&username={username}"
     

@@ -15,7 +15,7 @@ class Discord(Service):
 
   def get_id(self) -> str:
     return "discord"
-
+  
   async def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = "https://discord.com/api/v9/unique-username/username-attempt-unauthed"
 

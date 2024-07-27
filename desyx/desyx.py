@@ -11,7 +11,6 @@ import time
 class Desyx:
   def __init__(self, generator: Generator, service: Service, loggers: List[Logger] = [CliLogger()], semi_muts: List[Mut] = []):
     self.service = service
-    self.service_id = service.get_id()
     self.generator = generator
     self.loggers = loggers
     self.semi_muts = semi_muts
@@ -24,10 +23,10 @@ class Desyx:
         if valid:
           if is_semi:
             for logger in self.loggers:
-              tg.create_task(logger.log_semi_og(name, self.service_id))
+              tg.create_task(logger.log_semi_og(name, self.service))
           else:
             for logger in self.loggers:
-              tg.create_task(logger.log_og(name, self.service_id))
+              tg.create_task(logger.log_og(name, self.service))
 
         return valid
       except RateError as err:
@@ -40,11 +39,11 @@ class Desyx:
 
   async def __handle_error(self, name: str, err):
     for logger in self.loggers:
-      await logger.log_error(name, err, self.service_id)
+      await logger.log_error(name, err, self.service)
 
   async def __handle_rate_limit(self, name: str, err):
     for logger in self.loggers:
-      await logger.log_rate_limit(name, err, self.service_id)
+      await logger.log_rate_limit(name, err, self.service)
 
   async def run(self):
     while True:

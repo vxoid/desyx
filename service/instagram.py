@@ -18,11 +18,15 @@ class Instagram(Service):
 
   def __init__(self, x_ig_app_id: str, proxies: Proxies):    
     self.ig_app_id = x_ig_app_id
+    print(f"IG app id: {self.ig_app_id}")
     self.session = aiohttp.ClientSession()
     super().__init__(proxies=proxies, min_len=1, max_len=10, trusted_only=False, secure_only=False)
 
   def get_id(self) -> str:
     return "instagram"
+
+  def get_link(self, username: str) -> str | None:
+    return f"https://www.instagram.com/{username}"
 
   async def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = f"http://www.instagram.com/api/v1/users/web_profile_info/?username={username}"

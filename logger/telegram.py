@@ -1,7 +1,8 @@
 from logger.telegram_logger_profile import TelegramLoggerProfile
-from aiogram.utils.markdown import hbold, hblockquote
+from aiogram.utils.markdown import hbold, hlink
 from aiogram.exceptions import TelegramRetryAfter
 from restrict.restrict import RestrictableHolder
+from service.service import Service
 from errors.errors import RateError
 from .logger import Logger
 from typing import List
@@ -27,14 +28,14 @@ class TelegramLogger(Logger):
     finally:
       await bot.session.close()
 
-  async def _log_og(self, og: str, service_id: str):
-    await self.__log(f"[{service_id}]: '{hbold(og)}' is valid OG")
+  async def _log_og(self, og: str, service: Service):
+    await self.__log(f"[{service.get_id()}]: '{hlink(og, service.get_link(og)) or hbold(og)}' is valid OG")
   
-  async def _log_semi_og(self, semi_og: str, service_id: str):
-    await self.__log(f"[{service_id}]: '{semi_og}' is valid semi OG")
+  async def _log_semi_og(self, semi_og: str, service: Service):
+    await self.__log(f"[{service.get_id()}]: '{hlink(semi_og, service.get_link(semi_og)) or semi_og}' is valid semi OG")
 
-  async def _log_rate_limit(self, name: str, err: RateError, service_id: str):
-    await self.__log(f"[{service_id}]: > the closest proxy rate limited for {hbold(int(err.time))} secs, waiting to check {hbold(name)}")
+  async def _log_rate_limit(self, name: str, err: RateError, service: Service):
+    await self.__log(f"[{service.get_id()}]: > the closest proxy rate limited for {hbold(int(err.time))} secs, waiting to check {hlink(name, service.get_link(name)) or hbold(name)}")
 
-  async def _log_error(self, name: str, err, service_id: str):
-    await self.__log(f"[{service_id}]: > could not check name '{hbold(name)}' -> {hbold(err)}*")
+  async def _log_error(self, name: str, err, service: Service):
+    await self.__log(f"[{service.get_id()}]: > could not check name '{hlink(name, service.get_link(name)) or hbold(name)}' -> {hbold(err)}*")

@@ -38,6 +38,9 @@ class Service():
   def get_id(self) -> str:
     raise NotImplementedError()
   
+  def get_link(self, username: str) -> str | None:
+    return None
+  
   @abstractmethod
   async def _unchecked_username_valid(self, username: str, proxy: Restrictable) -> bool:
     raise NotImplementedError()
