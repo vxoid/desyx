@@ -41,7 +41,7 @@ class Twitter(Service):
       'x-twitter-client-language': 'en'
     }
 
-    proxydict = proxy.get_http_client_proxy()
+    proxydict = proxy.get_proxy_as_url()
 
     async with self.session.get(url, headers=headers, proxy=proxydict) as response:
       response_text = await response.text()

@@ -14,16 +14,13 @@ class Proxy(Restrictable):
   def from_dict(dict) -> "Proxy":
     return Proxy(dict["name"], dict["scheme"], dict["hostname"], dict["port"], dict.get("username"), dict.get("password"), dict.get("trusted"))
   
-  def get_http_client_proxy(self) -> dict | None:
+  def get_proxy_as_url(self) -> dict | None:
     url = f"{self.scheme}://"
     if self.username is not None and self.password is not None:
       url += f"{self.username}:{self.password}@"
     url += f"{self.hostname}:{self.port}"
 
-    proxies = { "http": url }
-    if self.scheme != "http":
-      proxies["https"] = url
-    return proxies
+    return url
   
   def get_pyrogram_proxy(self) -> dict | None:
     return {
@@ -41,7 +38,7 @@ class NoProxy(Proxy):
   def __init__(self):
     super().__init__("<noproxy>", None, None, None, None, None, True)
 
-  def get_http_client_proxy(self) -> dict | None:
+  def get_proxy_as_url(self) -> dict | None:
     return None
   
   def get_pyrogram_proxy(self) -> dict | None:

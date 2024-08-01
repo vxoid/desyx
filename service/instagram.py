@@ -36,7 +36,7 @@ class Instagram(Service):
       'X-Ig-App-Id': self.ig_app_id
     }
 
-    proxydict = proxy.get_http_client_proxy()
+    proxydict = proxy.get_proxy_as_url()
     if proxydict is None or "https" in proxydict:
       url = f"https://www.instagram.com/api/v1/users/web_profile_info/?username={username}"
     

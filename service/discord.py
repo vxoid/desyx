@@ -19,7 +19,7 @@ class Discord(Service):
   async def _unchecked_username_valid(self, username: str, proxy: Proxy) -> bool:
     url = "https://discord.com/api/v9/unique-username/username-attempt-unauthed"
 
-    proxiesdict = proxy.get_http_client_proxy()
+    proxiesdict = proxy.get_proxy_as_url()
 
     async with self.session.post(url, data=json.dumps({ "username": username }), proxy=proxiesdict) as response:
       response_json = await response.json()

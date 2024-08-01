@@ -33,6 +33,7 @@ class TelegramLogger(Logger):
   
   async def _log_semi_og(self, semi_og: str, service: Service):
     await self.__log(f"[{service.get_id()}]: '{hlink(semi_og, service.get_link(semi_og)) or semi_og}' is valid semi OG")
+    # pass # ingore semis
 
   async def _log_rate_limit(self, name: str, err: RateError, service: Service):
     await self.__log(f"[{service.get_id()}]: > the closest proxy rate limited for {hbold(int(err.time))} secs, waiting to check {hlink(name, service.get_link(name)) or hbold(name)}")
